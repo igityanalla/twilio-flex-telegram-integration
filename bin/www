@@ -40,8 +40,6 @@ server.listen(port, () => {
     }).catch(e => {
         console.log('ngrok error: ', e);
     });
-
-    console.log(process.env.WEBHOOK_BASE_URL);
 });
 server.on('error', onError);
 server.on('listening', onListening);

@@ -36,9 +36,8 @@ app.use(function (err, req, res, next) {
 });
 
 const init = async () => {
-    console.log("Setting up telegram webhook...")
-    const response = await axios.get(`https://api.telegram.org/bot${process.env.TELEGRAM_API_TOKEN}/setWebhook?url=${process.env.WEBHOOK_BASE_URL}/receive-message`)
-    console.log("Response: ", response.data);
+    console.log("Setting up telegram webhook...");
+    await axios.get(`https://api.telegram.org/bot${process.env.TELEGRAM_API_TOKEN}/setWebhook?url=${process.env.WEBHOOK_BASE_URL}/receive-message&allowed_updates=["message"]`)
 }
 
 module.exports = {app, init};

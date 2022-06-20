@@ -10,8 +10,8 @@ async function fetchParticipantConversations(chatId) {
         .list({identity: chatId});
 }
 
-async function getExistingConversation(chatId) {
-    const conversations = await fetchParticipantConversations(chatId);
+async function findExistingConversation(identity) {
+    const conversations = await fetchParticipantConversations(identity);
     let existing = conversations.find(conversation => conversation.conversationState !== 'closed');
     console.log("Existing: ", existing);
     return existing !== undefined ? existing.conversationSid : undefined;
@@ -24,13 +24,13 @@ async function createConversation(chatId) {
         });
 }
 
-async function createParticipant(conversationSid, fullName) {
+async function createParticipant(conversationSid, identity) {
     return client.conversations.conversations(conversationSid)
         .participants
-        .create({identity: fullName});
+        .create({identity: identity});
 }
 
-async function createScopedWebhooksMessageAdded(conversationSid, chatId) {
+async function createScopedWebhooks(conversationSid, chatId) {
     await client.conversations.conversations(conversationSid)
         .webhooks
         .create({
@@ -49,30 +49,30 @@ async function createScopedWebhooksMessageAdded(conversationSid, chatId) {
         })
 }
 
-async function createMessage(conversationSid, username, body) {
+async function createMessage(conversationSid, author, body) {
     return client.conversations.conversations(conversationSid)
         .messages
         .create({
-            author: username,
+            author: author,
             body: body,
             xTwilioWebhookEnabled: true
         });
 }
 
-async function sendMessageToFlex(chatId, fullName, body) {
-    let existingConversationSid = await getExistingConversation(chatId);
+async function sendMessageToFlex(chatId, body) {
+    let identity = `telegram_user_${chatId}`;
+    let existingConversationSid = await findExistingConversation(identity);
     if (existingConversationSid === undefined) {
         const {sid: conversationSid} = await createConversation(chatId);
         console.log("Conversation SID: ", conversationSid);
-        const {sid: participantSid} = await createParticipant(conversationSid, fullName);
-        console.log("Participant SID: ", participantSid);
-        await createScopedWebhooksMessageAdded(conversationSid, chatId);
+        await createParticipant(conversationSid, identity);
+        await createScopedWebhooks(conversationSid, chatId);
         existingConversationSid = conversationSid;
     }
 
     console.log("existing sid: ", existingConversationSid);
 
-    const {sid: messageSid} = await createMessage(existingConversationSid, fullName, body);
+    const {sid: messageSid} = await createMessage(existingConversationSid, identity, body);
     console.log("Message SID: ", messageSid);
 }
 
