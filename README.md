@@ -26,5 +26,4 @@ For building and running this application you need:
 5. `npm start`
 6. Launch Flex, make yourself available and give it a try!
 
-![Telegram](/public/images/telegram.png?raw=true)
-![Flex](/public/images/flex.png?raw=true)
+![Telegram](/public/images/screenshots.png?raw=true)
