@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const getFullName = require('../utils/utils');
 const sendMessageToFlex = require('../service/flex-telegram-integration');
 const axios = require('axios');
 
@@ -26,6 +25,5 @@ router.post('/new-message', async function (request, response) {
     }
     response.sendStatus(200);
 });
-
 
 module.exports = router;
