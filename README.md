@@ -4,6 +4,7 @@
 
 
 This repository contains a proof of concept Express application for integrating Telegram into Twilio Flex with Conversations. The associated blog post can be found here:
+https://www.twilio.com/blog/integrate-telegram-flex-conversations
 
 
 
