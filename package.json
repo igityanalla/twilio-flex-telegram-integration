@@ -3,18 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "twilio-run",
+    "deploy": "twilio-run deploy"
   },
   "dependencies": {
     "axios": "^0.27.2",
-    "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
-    "dotenv": "^16.0.1",
-    "express": "~4.16.1",
-    "http-errors": "~1.6.3",
-    "jade": "~1.11.0",
-    "morgan": "~1.9.1",
-    "ngrok": "^4.3.1",
-    "twilio": "^3.77.2"
+    "twilio": "^3.56",
+    "@twilio/runtime-handler": "1.2.0"
+  },
+  "devDependencies": {
+    "twilio-run": "^3.3.0"
+  },
+  "engines": {
+    "node": "12"
   }
 }

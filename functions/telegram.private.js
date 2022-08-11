@@ -1,36 +1,29 @@
-require('dotenv').config();
-
-const client = require('twilio')(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-);
-
-async function fetchParticipantConversations(chatId) {
+async function fetchParticipantConversations(client, chatId) {
     return client.conversations.participantConversations
         .list({identity: chatId});
 }
 
-async function findExistingConversation(identity) {
-    const conversations = await fetchParticipantConversations(identity);
+async function findExistingConversation(client, identity) {
+    const conversations = await fetchParticipantConversations(client, identity);
     let existing = conversations.find(conversation => conversation.conversationState !== 'closed');
     console.log("Existing: ", existing);
     return existing !== undefined ? existing.conversationSid : undefined;
 }
 
-async function createConversation(chatId) {
+async function createConversation(client, chatId) {
     return client.conversations.conversations
         .create({
             friendlyName: `Telegram_conversation_${chatId}`
         });
 }
 
-async function createParticipant(conversationSid, identity) {
+async function createParticipant(client, conversationSid, identity) {
     return client.conversations.conversations(conversationSid)
         .participants
         .create({identity: identity});
 }
 
-async function createScopedWebhooks(conversationSid, chatId) {
+async function createScopedWebhooks(client, conversationSid, chatId, domainName) {
     await client.conversations.conversations(conversationSid)
         .webhooks
         .create({
@@ -45,11 +38,11 @@ async function createScopedWebhooks(conversationSid, chatId) {
             target: 'webhook',
             'configuration.filters': 'onMessageAdded',
             'configuration.method': 'POST',
-            'configuration.url': `${process.env.WEBHOOK_BASE_URL}/new-message?chat_id=${chatId}`,
+            'configuration.url': `https://${domainName}/send-message?chat_id=${chatId}`,
         })
 }
 
-async function createMessage(conversationSid, author, body) {
+async function createMessage(client, conversationSid, author, body) {
     return client.conversations.conversations(conversationSid)
         .messages
         .create({
@@ -59,21 +52,21 @@ async function createMessage(conversationSid, author, body) {
         });
 }
 
-async function sendMessageToFlex(chatId, body) {
+async function sendMessageToFlex(client, domainName, chatId, body) {
     let identity = `telegram_user_${chatId}`;
-    let existingConversationSid = await findExistingConversation(identity);
+    let existingConversationSid = await findExistingConversation(client, identity);
     if (existingConversationSid === undefined) {
-        const {sid: conversationSid} = await createConversation(chatId);
+        const {sid: conversationSid} = await createConversation(client, chatId);
         console.log("Conversation SID: ", conversationSid);
-        await createParticipant(conversationSid, identity);
-        await createScopedWebhooks(conversationSid, chatId);
+        await createParticipant(client, conversationSid, identity);
+        await createScopedWebhooks(client, conversationSid, chatId, domainName);
         existingConversationSid = conversationSid;
     }
 
     console.log("existing sid: ", existingConversationSid);
 
-    const {sid: messageSid} = await createMessage(existingConversationSid, identity, body);
+    const {sid: messageSid} = await createMessage(client, existingConversationSid, identity, body);
     console.log("Message SID: ", messageSid);
 }
 
-module.exports = sendMessageToFlex;
+module.exports = {sendMessageToFlex};
